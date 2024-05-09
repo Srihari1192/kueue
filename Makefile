@@ -29,7 +29,7 @@ GIT_TAG ?= $(shell git describe --tags --dirty --always)
 PLATFORMS ?= linux/amd64,linux/arm64,linux/s390x,linux/ppc64le
 CLI_PLATFORMS ?= linux/amd64,linux/arm64,darwin/amd64,darwin/arm64
 DOCKER_BUILDX_CMD ?= docker buildx
-IMAGE_BUILD_CMD ?= $(DOCKER_BUILDX_CMD) build
+IMAGE_BUILD_CMD ?= $(DOCKER_BUILDX_CMD) build --load
 IMAGE_BUILD_EXTRA_OPTS ?=
 # TODO(#52): Add kueue to k8s gcr registry
 STAGING_IMAGE_REGISTRY := gcr.io/k8s-staging-kueue
