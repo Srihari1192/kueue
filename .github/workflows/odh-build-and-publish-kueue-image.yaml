@@ -33,7 +33,7 @@ jobs:
           run: |
             go mod download
 
-         - name: Login to Quay.io
+        - name: Login to Quay.io
           id: podman-login-quay
           shell: bash
           run: |
