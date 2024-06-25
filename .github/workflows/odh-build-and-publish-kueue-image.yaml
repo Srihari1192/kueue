@@ -1,0 +1,57 @@
+name: Build and Publish image
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Tag to be used for kueue image'
+        required: true
+        default: 'v0.0.0-dev'
+
+jobs:
+    build-and-publish:
+      runs-on: ubuntu-latest  
+      env:
+        GOPATH: ${{ github.workspace }}/go
+      steps:
+        - name: Environment dump
+          shell: bash
+          run: |
+            echo "GOPATH = ${GOPATH}"
+            echo "TAG = ${{ github.event.inputs.version }}"
+
+        - name: Checkout
+          uses: actions/checkout@v4
+    
+        - name: Set Go
+          uses: actions/setup-go@v5
+          with:
+            go-version-file: go.mod
+
+        - name: Run go mod
+          shell: bash
+          run: |
+            go mod download
+
+        - name: Login to Quay.io
+          id: podman-login-quay
+          shell: bash
+          run: |
+            podman login --username ${{ secrets.QUAY_USERNAME }} --password ${{ secrets.PASSWORD }} quay.io
+
+        - name: Image Build and Push
+          env:
+            CGO_ENABLED: 1
+            PLATFORMS: linux/amd64
+            TARGETARCH: amd64
+            IMAGE_REGISTRY: quay.io/svenkata1
+            GIT_TAG: ${{ github.event.inputs.version }}
+          run: |
+            make image-build
+            docker images
+            make image-push
+
+        - name: Logout from Quay.io
+          if: always() && steps.podman-login-quay.outcome == 'success'
+          run: |
+            podman logout quay.io
